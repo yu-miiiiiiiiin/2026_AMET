@@ -88,34 +88,34 @@ LiDAR 측정값을 차량 기준 좌표로 변환하고, 전방 주행 통로에
 ## 🔄 시스템 구성도
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#e3f2fd", "primaryTextColor": "#00579f", "primaryBorderColor": "#d6dfe5", "lineColor": "#999999", "fontFamily": "sans-serif", "fontSize": "18px"}, "flowchart": {"curve": "rounded", "nodeSpacing": 45, "rankSpacing": 55}}}%%
+
 flowchart TD
-    A["run.sh 실행"] --> B["차량 정지 및 모델·센서 초기화"]
-    B --> C["초록색 원형 출발 신호 대기"]
-    C -->|"신호 확인 또는 대기시간 초과"| D["주행 시작"]
+    A("run.sh 실행") --> B("차량 정지 · 모델 로드")
+    B --> C("초록 원형 신호 대기")
+    C -->|"3회 연속 검출 또는 기본 20초 경과"| D("주행 시작")
 
-    D --> E["카메라 영상 수집"]
-    D --> F["LiDAR 데이터 수집"]
+    D --> E("카메라 영상")
+    D --> F("LiDAR")
 
-    E --> G["CNN으로 영상 특징 추출"]
-    F --> H["MLP로 거리 특징 추출"]
-    G --> I["센서 특징 융합"]
-    H --> I
-    I --> J["신경망 조향 예측"]
+    E --> G("카메라 CNN")
+    E --> H("주황색 선 굽힘 분석")
 
-    E --> K["주황색 주행선 굽힘 분석"]
-    F --> L["전방 장애물 검출 및 거리 계산"]
-    K --> M["커브에 따른 속도 제한"]
-    L --> N["장애물에 따른 속도 제한"]
-    F --> O["센서 데이터 지연에 따른 속도 제한"]
+    F --> I("LiDAR 신경망")
+    F --> J("전방 장애물 거리 계산")
 
-    M --> P["가장 낮은 제한 속도 선택"]
-    N --> P
-    O --> P
-    P --> Q["가속 제한 적용"]
+    G --> K("특징 결합 · 조향 예측")
+    I --> K
 
-    J --> R["최종 조향·속도 명령 전송"]
-    Q --> R
-    R --> S["차량 주행"]
-    S --> E
-    S --> F
+    H --> L("속도 제한 계산")
+    J --> L
+
+    K --> M("최종 조향")
+    L --> N("가속 제한 적용 · 최종 속도")
+
+    M --> O("차량 API에 명령 전송")
+    N --> O
+
+    classDef default fill:#e3f2fd,stroke:#d6dfe5,stroke-width:1.5px,color:#00579f,font-weight:bold;
+    linkStyle default stroke:#999999,stroke-width:1.5px;
 ```
